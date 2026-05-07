@@ -4,7 +4,7 @@ const originText = document.querySelector("#origin-text p").innerHTML;
 const resetButton = document.querySelector("#reset");
 const theTimer = document.querySelector(".timer");
 const highscoreBody = document.querySelector("#highscore-body");
-const wpmDisplay = document.querySelector("#wpm p");
+const wpmDisplay = document.querySelector(".wpm");
 const mistakeDisplay = document.querySelector(".mistakes");
 let previousText = "";
 

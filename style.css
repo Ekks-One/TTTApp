@@ -190,3 +190,20 @@ body {
     color: white;
     background-color: #E95D0F;
 }
+
+#metrics {
+    border: 4px solid red;
+    width: 250px;
+    align-items: center;
+    justify-content: center;
+    display:flex;
+    margin: 0 auto;
+    margin-top: 15px;
+}
+
+#metrics p{
+    color: blue;
+    display:inline-block;
+    margin: 10px; 
+    width: 100px;
+}
