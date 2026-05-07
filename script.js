@@ -20,6 +20,7 @@ let mistakes = 0;
 let timerStart = false;
 let interval;
 let highscores = JSON.parse(localStorage.getItem("highscores"));
+let completed = false;
 
 // Match the text entered with the provided text on the page:
 
@@ -28,9 +29,11 @@ function spellCheck(interval) {
     let originTextMatch = document.querySelector("#origin-text p").innerHTML.trim()
 
     let [minutes, seconds, hundredths] = theTimer.innerHTML.split(":").map(Number);
-    let wordsPerMin = (textEntered.length / 5) / (seconds / 60);
+    let totalSeconds = minutes * 60 + seconds + hundredths / 100;
+    let wordsPerMin = (textEntered.length / 5) / (totalSeconds / 60);
     wpmDisplay.textContent = `WPM: ${Math.round(wordsPerMin)}`;
-    if (textEntered === originTextMatch) {
+    if (textEntered === originTextMatch && !completed) {
+        completed = true;
         testWrapper.style.borderColor = "green";
         if(timerStart === false) return;
         //Stop Timer
@@ -96,6 +99,7 @@ function resetTest(interval) {
     mistakeDisplay.textContent = `Mistakes: ${mistakes}`;
     wpmDisplay.textContent = `WPM: 0`;
     loadRandomText();
+    completed = false;
     previousText = "";
 }
 
@@ -152,6 +156,10 @@ function mistakeCounter(textEntered, originTextMatch) {
 
 // Event listeners for keyboard input and the reset button:
 addEventListener("keypress", startTimer);
-addEventListener("keyup", () => spellCheck(interval));
+addEventListener("keyup", () => {
+    if(!completed) {
+        spellCheck(interval);
+    }
+});
 resetButton.addEventListener("click", () => resetTest(interval));
 window.addEventListener("DOMContentLoaded", displayHighscores);
