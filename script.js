@@ -8,6 +8,7 @@ const wpmDisplay = document.querySelector(".wpm");
 const mistakeDisplay = document.querySelector(".mistakes");
 let previousText = "";
 
+//Sentence List
 const otherText = [
     "Do you like my sword sword, sword my diamond sword sword.",
     "Once I was a little girl.",
@@ -29,9 +30,13 @@ function spellCheck(interval) {
     let originTextMatch = document.querySelector("#origin-text p").innerHTML.trim()
 
     let [minutes, seconds, hundredths] = theTimer.innerHTML.split(":").map(Number);
+
+    //WPM Calculation
     let totalSeconds = minutes * 60 + seconds + hundredths / 100;
     let wordsPerMin = (textEntered.length / 5) / (totalSeconds / 60);
     wpmDisplay.textContent = `WPM: ${Math.round(wordsPerMin)}`;
+
+    //Once finished with the typing test
     if (textEntered === originTextMatch && !completed) {
         completed = true;
         testWrapper.style.borderColor = "green";
@@ -42,15 +47,18 @@ function spellCheck(interval) {
         updateHighscores();
     } 
 
+    //Typing without a mistake 
     else if(textEntered.split("").length !== originTextMatch.split("").length && originTextMatch.startsWith(textEntered)) {
         testWrapper.style.borderColor = "blue";
     }
 
+    //If mistake within the text before finishing the text
     else if(textEntered.split("").length !== originTextMatch.split("").length && !textEntered.startsWith(originTextMatch)) {
         testWrapper.style.borderColor = "#c7511a";
         mistakeCounter(textEntered, originTextMatch);
     } 
 
+    //Edge case where they finish but mistake still remains in the text entered
     else {
         testWrapper.style.borderColor = "red";
         mistakeCounter(textEntered, originTextMatch);
@@ -67,10 +75,12 @@ function startTimer() {
     // Run a standard minute/second/hundredths timer:
     interval = setInterval(() => {
         hundredths++;
+        //Count Hundredths
         if (hundredths === 100) {
             hundredths = 0;
             seconds++;
         }
+        //Count Minutes
         if (seconds === 60) {
             seconds = 0;
             minutes++;
@@ -107,9 +117,10 @@ function resetTest(interval) {
 function updateHighscores() {
     let score = theTimer.innerHTML;
     
+    //If List is empty just add score.
     if (highscores === null) {
         highscores = [score];
-    } else {
+    } else { //Else push score and sort it keeping 3 highscores at most
         highscores.push(score);
         highscores.sort();
         if (highscores.length > 3) {
@@ -117,12 +128,14 @@ function updateHighscores() {
         }
     }
 
+    //Set New score to current highscore
     localStorage.setItem("highscores", JSON.stringify(highscores));
     displayHighscores();
 }
-
+//Display HighScores
 function displayHighscores() {
     highscoreBody.innerHTML = "";
+    //Generate a highscore row to be inserted in table
     if (highscores !== null) {
         highscores.forEach((score, index) => {
             let row = document.createElement("tr");
@@ -139,12 +152,15 @@ function displayHighscores() {
     }
 }
 
+//Loads Random Word from List
 function loadRandomText() {
     const randomIndex = Math.floor(Math.random() * otherText.length);
     document.querySelector("#origin-text p").innerHTML = otherText[randomIndex];
 }
 
+//Mistake count comparing textEntered and originalText
 function mistakeCounter(textEntered, originTextMatch) {
+    //Prohbit backspace as a error
     if(event.key === "Backspace") return;
     if (textEntered.length > previousText.length && !originTextMatch.startsWith(textEntered)) {
         mistakes++;
@@ -155,11 +171,15 @@ function mistakeCounter(textEntered, originTextMatch) {
 }
 
 // Event listeners for keyboard input and the reset button:
+resetButton.addEventListener("click", () => resetTest(interval));
 addEventListener("keypress", startTimer);
+
+//Checks spell check on keyup
 addEventListener("keyup", () => {
     if(!completed) {
         spellCheck(interval);
     }
 });
-resetButton.addEventListener("click", () => resetTest(interval));
+
+//Sets Highscores on page load
 window.addEventListener("DOMContentLoaded", displayHighscores);
