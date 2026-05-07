@@ -4,7 +4,19 @@ const originText = document.querySelector("#origin-text p").innerHTML;
 const resetButton = document.querySelector("#reset");
 const theTimer = document.querySelector(".timer");
 const highscoreBody = document.querySelector("#highscore-body");
+const wpmDisplay = document.querySelector("#wpm p");
+const mistakeDisplay = document.querySelector(".mistakes");
+let previousText = "";
 
+const otherText = [
+    "Do you like my sword sword, sword my diamond sword sword.",
+    "Once I was a little girl.",
+    "=^_^=",
+    "How much wood would a woodchuck chuck if a woodchuck could chuck wood?",
+    "What the sigma is going on here?"
+];
+
+let mistakes = 0;
 let timerStart = false;
 let interval;
 let highscores = JSON.parse(localStorage.getItem("highscores"));
@@ -13,12 +25,14 @@ let highscores = JSON.parse(localStorage.getItem("highscores"));
 
 function spellCheck(interval) {
     let textEntered = testArea.value.trim()
-    let originTextMatch = originText.trim()
+    let originTextMatch = document.querySelector("#origin-text p").innerHTML.trim()
 
-
+    let [minutes, seconds, hundredths] = theTimer.innerHTML.split(":").map(Number);
+    let wordsPerMin = (textEntered.length / 5) / (seconds / 60);
+    wpmDisplay.textContent = `WPM: ${Math.round(wordsPerMin)}`;
     if (textEntered === originTextMatch) {
         testWrapper.style.borderColor = "green";
-
+        if(timerStart === false) return;
         //Stop Timer
         clearInterval(interval);
         testArea.disabled = true;
@@ -31,10 +45,12 @@ function spellCheck(interval) {
 
     else if(textEntered.split("").length !== originTextMatch.split("").length && !textEntered.startsWith(originTextMatch)) {
         testWrapper.style.borderColor = "#c7511a";
+        mistakeCounter(textEntered, originTextMatch);
     } 
 
     else {
         testWrapper.style.borderColor = "red";
+        mistakeCounter(textEntered, originTextMatch);
     }
 }
 
@@ -65,6 +81,7 @@ function startTimer() {
 
         theTimer.innerHTML = `${m}:${s}:${h}`;
     }, 10); // 10 milliseconds = 1/100th of a second
+
 }
 
 // Reset everything:
@@ -75,6 +92,11 @@ function resetTest(interval) {
     theTimer.innerHTML = "00:00:00";
     testArea.value = "";
     testWrapper.style.borderColor = "grey";
+    mistakes = 0;
+    mistakeDisplay.textContent = `Mistakes: ${mistakes}`;
+    wpmDisplay.textContent = `WPM: 0`;
+    loadRandomText();
+    previousText = "";
 }
 
 // Keep track of top 3 highscores and display them in the highscore table:
@@ -100,18 +122,34 @@ function displayHighscores() {
     if (highscores !== null) {
         highscores.forEach((score, index) => {
             let row = document.createElement("tr");
-            let rankCell = document.createElement("td");
-            let scoreCell = document.createElement("td");
+            let rank = document.createElement("td");
+            let time = document.createElement("td");
 
-            rankCell.textContent = index + 1;
-            scoreCell.textContent = score;
+            rank.textContent = index + 1;
+            time.textContent = score;
 
-            row.appendChild(rankCell);
-            row.appendChild(scoreCell);
+            row.appendChild(rank);
+            row.appendChild(time);
             highscoreBody.appendChild(row);
         });
     }
 }
+
+function loadRandomText() {
+    const randomIndex = Math.floor(Math.random() * otherText.length);
+    document.querySelector("#origin-text p").innerHTML = otherText[randomIndex];
+}
+
+function mistakeCounter(textEntered, originTextMatch) {
+    if(event.key === "Backspace") return;
+    if (textEntered.length > previousText.length && !originTextMatch.startsWith(textEntered)) {
+        mistakes++;
+        mistakeDisplay.textContent = `Mistakes: ${mistakes}`;
+    }
+
+    previousText = textEntered;
+}
+
 // Event listeners for keyboard input and the reset button:
 addEventListener("keypress", startTimer);
 addEventListener("keyup", () => spellCheck(interval));
